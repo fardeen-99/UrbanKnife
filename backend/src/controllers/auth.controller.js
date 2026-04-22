@@ -6,7 +6,7 @@ import { sendmail } from "../services/mail.service.js";
 import jwt from "jsonwebtoken";
 
 
-const generateToken=async(user,res)=>{
+const generateToken=async(user,res,code)=>{
 
 const token=jwt.sign({id:user._id},configure.jwt_secret,{expiresIn:"2d"});
 
@@ -17,9 +17,9 @@ res.cookie("token",token,{
     // maxAge:2*24*60*60*1000
 })
 
-res.status(201).json({
+res.status(code).json({
     success:true,
-    message:"User registered successfully",
+    message: code ==200 ? "User logged in successfully" : "User registered successfully",
     user:{
         _id:user._id,
         username:user.username,
@@ -56,7 +56,7 @@ const user=await usermodel.create({
     role:isSeller ? "seller" : "buyer"
 })
 
-await generateToken(user,res);
+await generateToken(user,res,201);
 
     }
 catch(error){
@@ -75,7 +75,7 @@ export const loginController=async(req,res,next)=>{
         if(!isPasswordValid){
             return next(new HandleError(401,"Invalid password"));
         }
-        await generateToken(user,res);
+        await generateToken(user,res,200);
     }
     catch(error){
         next(error);
@@ -158,7 +158,7 @@ const profile=photos[0].value;
            res.redirect("http://localhost:5173/");
 
 
-           
+
     }
     catch(error){
         next(error);
@@ -168,12 +168,15 @@ const profile=photos[0].value;
 export const forgetControlller=async(req,res,next)=>{
     try {
         const {email}=req.body;
-        const user=await usermodel.findOne({email});
+        const normalizedEmail = email?.trim().toLowerCase();
+        const user=await usermodel.findOne({email: normalizedEmail});
         if(!user){
-            next(new HandleError(404,"User not found"));
+            return next(new HandleError(404,"User not found"));
         }
         const otp=Math.floor(100000+Math.random()*900000);
-        await redis.set(`otp:${email}`,otp.toString(),"EX",60*60*24);
+        console.log("Generated OTP for", normalizedEmail, ":", otp);
+        const data= await redis.set(`otp:${normalizedEmail}`,otp.toString(),"EX",60*60*24);
+        console.log("Redis response:", data);
         await sendmail({
             to:email,
             subject:"OTP for password reset",
@@ -620,19 +623,25 @@ export const forgetControlller=async(req,res,next)=>{
 
 export const verifyController=async(req,res,next)=>{
     try{
- const {otp,email}=req.body;       
-
- const otpData=await redis.get(`otp:${email}`);
- if(otpData!==otp){
-    next(new HandleError(401,"Invalid OTP"));
- }
- await redis.del(`otp:${email}`);
- await redis.set(`verified:${email}`, "true", "EX", 10 * 60)
- res.status(200).json({
-    success:true,
-    message:"OTP verified successfully",
-    email
- })
+  const {otp,email}=req.body;       
+  const normalizedEmail = email?.trim().toLowerCase();
+ 
+  const otpData=await redis.get(`otp:${normalizedEmail}`);
+  console.log("Email: ", email);
+  console.log("Normalized Email: ", normalizedEmail);
+  console.log("OTPData: ",otpData);
+  console.log("OTP: ",otp);
+  
+  if(String(otpData) !== String(otp)){
+     return next(new HandleError(401,"Invalid OTP"));
+  }
+  await redis.del(`otp:${normalizedEmail}`);
+  await redis.set(`verified:${normalizedEmail}`, "true", "EX", 10 * 60)
+  res.status(200).json({
+     success:true,
+     message:"OTP verified successfully",
+     email: normalizedEmail
+  })
 
     }
     catch(error){
@@ -643,15 +652,16 @@ export const verifyController=async(req,res,next)=>{
 export const resetController=async(req,res,next)=>{
     try{
         const {password,email}=req.body
-        const user=await usermodel.findOne({email});
+        const normalizedEmail = email?.trim().toLowerCase();
+        const user=await usermodel.findOne({email: normalizedEmail});
         if(!user){
-            next(new HandleError(404,"User not found"));
+            return next(new HandleError(404,"User not found"));
         }
-        const isVerified=await redis.get(`verified:${email}`);
+        const isVerified=await redis.get(`verified:${normalizedEmail}`);
         if(!isVerified){
-            next(new HandleError(401,"OTP not verified"));
+            return next(new HandleError(401,"OTP not verified"));
         }
-        await redis.del(`verified:${email}`);
+        await redis.del(`verified:${normalizedEmail}`);
         user.password=password;
         await user.save();
         res.status(200).json({

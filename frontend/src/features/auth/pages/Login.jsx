@@ -1,5 +1,5 @@
 import { motion } from "motion/react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { AuthScene, GoogleButton, InputField } from "../components/AuthScene";
 import { useAuth } from "../hooks/auth.hook";
@@ -9,7 +9,7 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-
+const navigate=useNavigate()
   const { HandleLogin } = useAuth()
 
   const submitHandler = async (event) => {

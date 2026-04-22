@@ -2,11 +2,18 @@ import { motion } from "motion/react";
 import { Link } from "react-router-dom";
 import { useState, useRef } from "react";
 import { AuthScene } from "../components/AuthScene";
+import {  useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../hooks/auth.hook";
 
 const VerifyPassword = () => {
     const [otp, setOtp] = useState(["", "", "", "", "", ""]);
     const inputRefs = useRef([]);
-
+    const {user}=useSelector((state)=>state.auth)
+    const email = user?.email;
+    const navigate=useNavigate()
+    const {HandleVerifyPassword}=useAuth()
+    
     const handleChange = (index, value) => {
         if (isNaN(value)) return;
         const newOtp = [...otp];
@@ -25,9 +32,17 @@ const VerifyPassword = () => {
         }
     };
 
-    const submitHandler = (event) => {
+    const submitHandler = async(event) => {
         event.preventDefault();
-        console.log("OTP submitted:", otp.join(""));
+        const OTP=otp.join("")
+        console.log(OTP)
+    const data=  await HandleVerifyPassword({email,otp:OTP})
+    if(data.success){
+        navigate("/reset-password")
+    }
+        setOtp(["", "", "", "", "", ""])
+            
+        
     };
 
     return (

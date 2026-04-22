@@ -2,14 +2,21 @@ import { motion } from "motion/react";
 import { Link } from "react-router-dom";
 import { useState } from "react";
 import { AuthScene, InputField } from "../components/AuthScene";
+import { useAuth } from "../hooks/auth.hook";
+import { useNavigate } from "react-router-dom";
 
 const ForgetPassword = () => {
     const [email, setEmail] = useState("");
+const navigate=useNavigate()
+    const {HandleForgetPassword, loader}=useAuth()
 
-    const submitHandler = (event) => {
+    const submitHandler = async(event) => {
         event.preventDefault();
-        // Functionality not required as per user request
-        console.log("Forget Password submitted for:", email);
+       const data = await HandleForgetPassword({email})
+       if(data?.success){
+           setEmail("")
+           navigate("/verify-password")
+       }
     };
 
     return (
@@ -47,11 +54,12 @@ const ForgetPassword = () => {
 
                     <motion.button
                         type="submit"
-                        whileHover={{ scale: 1.01, opacity: 0.92 }}
-                        whileTap={{ scale: 0.98 }}
-                        className="w-full rounded-full bg-black px-5 py-4 text-sm font-semibold uppercase tracking-[0.18em] text-[#f8f8f8]"
+                        disabled={loader}
+                        whileHover={!loader ? { scale: 1.01, opacity: 0.92 } : {}}
+                        whileTap={!loader ? { scale: 0.98 } : {}}
+                        className={`w-full rounded-full bg-black px-5 py-4 text-sm font-semibold uppercase tracking-[0.18em] text-[#f8f8f8] ${loader ? 'opacity-50 cursor-not-allowed' : ''}`}
                     >
-                        Send Reset Link
+                        {loader ? "Sending..." : "Send Reset Link"}
                     </motion.button>
                 </form>
             </div>

@@ -2,15 +2,29 @@ import { motion } from "motion/react";
 import { useState } from "react";
 import { AuthScene, InputField } from "../components/AuthScene";
 import { Eye, EyeOff } from "lucide-react";
+import { useAuth } from "../hooks/auth.hook";
+import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 
 const ResetPassword = () => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
-  const submitHandler = (event) => {
+  const { HandleResetPassword } = useAuth()
+  const { user } = useSelector((state) => state.auth);
+  const email = user?.email;
+  const navigate = useNavigate();
+
+  const submitHandler = async(event) => {
     event.preventDefault();
-    console.log("Password reset submitted");
+    if(password!==confirmPassword) return;
+    await HandleResetPassword({ email, password })
+    navigate("/login")
+    setPassword("")
+    setConfirmPassword("")
+    setShowPassword(false)
+    
   };
 
   return (

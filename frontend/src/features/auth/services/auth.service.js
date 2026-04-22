@@ -42,7 +42,7 @@ export const getme=async()=>{
     }
 }
 
-export const forgetPassword=async(email)=>{
+export const forgetPassword=async({email})=>{
     try{
         const response=await API.post("/forget",{email})
         return response.data;

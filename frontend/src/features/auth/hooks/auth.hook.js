@@ -1,7 +1,7 @@
-import {seterror,setloading,setuser} from "../state/auth.slice"
+import {seterror,setloading,setuser,setloader} from "../state/auth.slice"
 import {useDispatch} from "react-redux"
 import {register,login,logout,getme,forgetPassword,verifyPassword,resetPassword} from "../services/auth.service"
-
+import {useSelector} from "react-redux"
 export const useAuth=()=>{
 
 const dispatch=useDispatch()
@@ -55,25 +55,28 @@ const HandleGetme=async()=>{
     }
 }
 
-const HandleForgetPassword=async(email)=>{
+const HandleForgetPassword=async({email})=>{
    
-   
+    dispatch(setloader(true))
     try{
-        const response=await forgetPassword(email)
+        const response=await forgetPassword({email})
+        dispatch(setuser({ email: response.email }))
+        return response;
     }catch(error){
         dispatch(seterror(error))
     }finally{
-        dispatch(setloading(false))
+        dispatch(setloader(false))
     }
 }
 
 const HandleVerifyPassword=async({email,otp})=>{
-   
+    dispatch(setloading(true))
     try{
         const response=await verifyPassword({email,otp})
+        return response;
     }catch(error){
         dispatch(seterror(error))
-    }finally{   
+    }finally{
         dispatch(setloading(false))
     }
 }
@@ -82,6 +85,7 @@ const HandleResetPassword=async({email,password})=>{
    
     try{
         const response=await resetPassword({email,password})
+        return response;
     }catch(error){
         dispatch(seterror(error))
     }finally{
@@ -89,6 +93,7 @@ const HandleResetPassword=async({email,password})=>{
     }
 }
 
+    const {loader,error}=useSelector((state)=>state.auth)
 return{
     HandleRegister,
     HandleLogin,
@@ -96,7 +101,9 @@ return{
     HandleGetme,
     HandleForgetPassword,
     HandleVerifyPassword,
-    HandleResetPassword
+    HandleResetPassword,
+    loader,
+    error
 }
 
 

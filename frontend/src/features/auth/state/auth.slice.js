@@ -8,6 +8,7 @@ initialState:{
     user:null
     ,loading:true,
     error:null,
+    loader:false
 },
 reducers:{
     setuser:(state,action)=>{
@@ -18,11 +19,14 @@ state.loading=action.payload;
     },
     seterror:(state,action)=>{
 state.error=action.payload;
+    },
+    setloader:(state,action)=>{
+state.loader=action.payload;
     }
 }
 
 })
 
-export const {seterror,setloading,setuser}=authSlice.actions;
+export const {seterror,setloading,setuser,setloader}=authSlice.actions;
 
 export default authSlice.reducer;
