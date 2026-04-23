@@ -22,6 +22,8 @@ const Loader = ({ onComplete }) => {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [phase, setPhase] = useState("greetings"); // "greetings" | "curtain"
     const [showGreeting, setShowGreeting] = useState(true);
+    const[on,seton]=useState(true)
+     if(!on) return;
 
     // Determine if we are in the last two greetings for the theme switch
     const isLastTwo = currentIndex >= GREETINGS.length - 2;
@@ -31,6 +33,7 @@ const Loader = ({ onComplete }) => {
 
     // Cycle through greetings
     useEffect(() => {
+        
         if (phase !== "greetings") return;
 
         const timer = setTimeout(() => {
@@ -53,6 +56,7 @@ const Loader = ({ onComplete }) => {
     }, [currentIndex, phase]);
 
     const handleCurtainComplete = useCallback(() => {
+        
         if (onComplete) onComplete();
     }, [onComplete]);
 
@@ -151,11 +155,13 @@ const Loader = ({ onComplete }) => {
 };
 
 const CurtainReveal = ({ onDone }) => {
+   
     useEffect(() => {
         const timer = setTimeout(() => {
             if (onDone) onDone();
         }, 850);
         return () => clearTimeout(timer);
+        seton(false)
     }, [onDone]);
 
     return (

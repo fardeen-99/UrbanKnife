@@ -9,7 +9,22 @@ import { useState } from 'react'
 import Loader from './features/auth/components/Loader'
 
 function App() {
-  const [showLoader, setShowLoader] = useState(true)
+  const [showLoader, setShowLoader] = useState(() => {
+    if (window.location.pathname !== '/') {
+      return false;
+    }
+    const hasSeenLoader = sessionStorage.getItem('hasSeenLoader');
+    if (!hasSeenLoader) {
+      // Set it immediately so that a reload won't trigger it again
+      sessionStorage.setItem('hasSeenLoader', 'true');
+      return true;
+    }
+    return false;
+  })
+
+  const handleLoaderComplete = () => {
+    setShowLoader(false)
+  }
 
   const router = createBrowserRouter([
     {
@@ -36,7 +51,7 @@ function App() {
   return (
     <>
       {showLoader && (
-        <Loader onComplete={() => setShowLoader(false)} />
+        <Loader onComplete={handleLoaderComplete} />
       )}
       <RouterProvider router={router} />
     </>
