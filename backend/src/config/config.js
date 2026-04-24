@@ -29,6 +29,9 @@ if(!process.env.REDIS_PORT){
 if(!process.env.REDIS_PASSWORD){
     throw new Error("REDIS_PASSWORD is not defined");
 }
+if(!process.env.IMAGEKIT_PRIVATE_KEY){
+    throw new Error("IMAGEKIT_PRIVATE_KEY is not defined");
+}
 
 
     const configure={
@@ -43,6 +46,8 @@ if(!process.env.REDIS_PASSWORD){
         redis_host:process.env.REDIS_HOST,
         redis_port:process.env.REDIS_PORT,
         redis_password:process.env.REDIS_PASSWORD,
+        imagekit_key:process.env.IMAGEKIT_PRIVATE_KEY,
+   
        
     }
 
