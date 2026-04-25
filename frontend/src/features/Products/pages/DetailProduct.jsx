@@ -28,6 +28,7 @@ const DetailProduct = () => {
 
     useEffect(() => {
         if (id) handleGetProductById(id);
+
     }, [id]);
 
     // Reset state when product changes
@@ -51,8 +52,9 @@ const DetailProduct = () => {
     }, [product, selectedVariantIndex]);
 
     const currentSizes = useMemo(() => {
-        if (!product || selectedVariantIndex === null || !product.variation?.[selectedVariantIndex]) return [];
-        return product.variation[selectedVariantIndex].sizes || [];
+        if (!product) return [];
+        if (selectedVariantIndex === null) return product.sizes || [];
+        return product.variation?.[selectedVariantIndex]?.sizes || [];
     }, [product, selectedVariantIndex]);
 
     if (loading) return <LoadingSkeleton />;
@@ -90,6 +92,7 @@ const DetailProduct = () => {
                             
                             {/* Title & Price */}
                             <section className="space-y-4">
+                                {console.log(product)}
                                 <div>
                                     <h1 className="text-4xl md:text-5xl font-serif font-medium tracking-tight text-black leading-tight">
                                         {product.title}
@@ -128,7 +131,7 @@ const DetailProduct = () => {
                                     <div className="space-y-4">
                                         <h4 className="text-[11px] font-black tracking-[0.2em] text-black uppercase">
                                             Color: <span className="text-gray-400 ml-2">
-                                                {selectedVariantIndex !== null ? product.variation[selectedVariantIndex]?.color : "Select a variation"}
+                                                {selectedVariantIndex !== null ? product.variation[selectedVariantIndex]?.color : product.color}
                                             </span>
                                         </h4>
                                         <div className="flex gap-3">
@@ -154,7 +157,7 @@ const DetailProduct = () => {
                                                 </div>
                                             </button>
 
-                                            {product.variation.map((variant, idx) => (
+                                            {product.variation?.map((variant, idx) => (
                                                 <button
                                                     key={idx}
                                                     onClick={() => {
@@ -185,7 +188,7 @@ const DetailProduct = () => {
                                             <button className="text-[10px] font-bold text-gray-400 underline tracking-widest uppercase hover:text-black">Size Guide</button>
                                         </div>
                                         <div className="grid grid-cols-4 gap-2">
-                                            {currentSizes.length > 0 ? currentSizes.map((s, idx) => (
+                                            {currentSizes.length > 0 ? currentSizes?.map((s, idx) => (
                                                 <button
                                                     key={idx}
                                                     disabled={s.stock === 0}
@@ -218,13 +221,13 @@ const DetailProduct = () => {
                             {/* Add to Bag */}
                             <section className="space-y-4">
                                 <button
-                                    disabled={product.variation?.length > 0 && !selectedSize}
+                                    disabled={!selectedSize}
                                     onClick={() => {
                                         setIsAdding(true);
                                         setTimeout(() => setIsAdding(false), 2000);
                                     }}
                                     className={`w-full py-5 text-xs font-black tracking-[0.2em] rounded-full transition-all duration-500 flex items-center justify-center gap-3 relative overflow-hidden ${
-                                        (product.variation?.length > 0 && !selectedSize)
+                                        (!selectedSize)
                                             ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
                                             : 'bg-black text-white shadow-2xl hover:bg-gray-900 group'
                                     }`}
@@ -292,7 +295,7 @@ const DetailProduct = () => {
             {/* Mobile Sticky Add to Bag */}
             <div className="fixed bottom-0 left-0 w-full bg-white/80 backdrop-blur-md p-4 lg:hidden z-50 border-t border-gray-100">
                 <button
-                    disabled={product.variation?.length > 0 && !selectedSize}
+                    disabled={!selectedSize}
                     className="w-full py-4 bg-black text-white text-[10px] font-black tracking-[0.3em] rounded-full flex items-center justify-center gap-3 shadow-xl active:scale-95 transition-transform"
                 >
                     {selectedSize ? `ADD TO BAG • ${product.price?.currency} ${product.price?.amount}` : 'SELECT SIZE'}
@@ -400,7 +403,7 @@ const Accordion = ({ items }) => {
 
     return (
         <div className="divide-y divide-gray-100">
-            {items.map((item, idx) => (
+            {items?.map((item, idx) => (
                 <div key={idx} className="py-6">
                     <button 
                         onClick={() => setOpenIndex(openIndex === idx ? -1 : idx)}

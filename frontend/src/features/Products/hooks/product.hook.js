@@ -1,4 +1,4 @@
-import { createProduct,getProductById,getMaleProducts,getFemaleProducts,getSneakers,addVariation } from "../services/product.api";
+import { createProduct,getProductById,getMaleProducts,getFemaleProducts,getSneakers,addVariation, getSellerAllProducts, getSellerProductDetail } from "../services/product.api";
 import{useDispatch} from 'react-redux'
 import {setLoading,setError,setProducts,setCurrentProduct} from '../state/product.slice'
 
@@ -9,11 +9,13 @@ const handleCreateProduct=async(formData)=>{
     dispatch(setLoading(true))
     try {
         const response=await createProduct(formData)
-        dispatch(setProducts(response.products))
-        
+        // Store the newly created product as the current one so we can add variations to it
+        dispatch(setCurrentProduct(response.product))
+        return response.product;
     }
     catch(error){
         dispatch(setError(error.response.data.message||error.message))
+        return null;
     }
     finally{
         dispatch(setLoading(false))
@@ -82,7 +84,38 @@ const handleAddVariation=async(id,formData)=>{
     dispatch(setLoading(true))
     try {
         const response=await addVariation(id,formData)
-        dispatch(setCurrentProduct(response))
+        dispatch(setCurrentProduct(response.product))
+        return response.product;
+    }
+    catch(error){
+        dispatch(setError(error.response.data.message|| error.message))
+        return null;
+    }
+    finally{
+        dispatch(setLoading(false))
+    }
+} 
+
+
+const handleGetSellerAllProducts=async()=>{
+    dispatch(setLoading(true))
+    try {
+        const response=await getSellerAllProducts()
+        dispatch(setProducts(response.products))
+        
+    }
+    catch(error){
+        dispatch(setError(error.response.data.message|| error.message))
+    }
+    finally{
+        dispatch(setLoading(false))
+    }
+} 
+const handleGetSellerProductDetail=async(id)=>{
+    dispatch(setLoading(true))
+    try {
+        const response=await getSellerProductDetail(id)
+        dispatch(setCurrentProduct(response.product))
         
     }
     catch(error){
@@ -93,7 +126,7 @@ const handleAddVariation=async(id,formData)=>{
     }
 } 
 
-return {handleCreateProduct,handleGetMaleProducts,handleGetFemaleProducts,handleGetSneakers,handleGetProductById,handleAddVariation}
+return {handleCreateProduct,handleGetMaleProducts,handleGetFemaleProducts,handleGetSneakers,handleGetProductById,handleAddVariation,handleGetSellerAllProducts,handleGetSellerProductDetail}
 
 }
 

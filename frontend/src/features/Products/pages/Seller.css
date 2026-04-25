@@ -1,0 +1,97 @@
+/* Premium Luxury Seller Dashboard Styles */
+
+.seller-luxury-bg {
+  background: radial-gradient(circle at top right, #1a1a1a, #000000);
+}
+
+.seller-card {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.seller-card:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: #d4af37;
+  transform: translateY(-5px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(212, 175, 55, 0.1);
+}
+
+.gold-text {
+  background: linear-gradient(to right, #bf953f, #fcf6ba, #b38728, #fbf5b7, #aa771c);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.gold-border {
+  border-color: #d4af37;
+}
+
+.gold-button {
+  background: linear-gradient(to right, #d4af37, #fcf6ba, #d4af37);
+  background-size: 200% auto;
+  color: #000;
+  transition: 0.5s;
+}
+
+.gold-button:hover {
+  background-position: right center;
+  box-shadow: 0 0 15px rgba(212, 175, 55, 0.4);
+}
+
+.premium-input {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: white;
+  transition: all 0.3s ease;
+}
+
+.premium-input:focus {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: #d4af37;
+  outline: none;
+  box-shadow: 0 0 10px rgba(212, 175, 55, 0.2);
+}
+
+.royal-heading {
+  font-family: 'Playfair Display', serif;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.nav-link-premium {
+  position: relative;
+  color: rgba(255, 255, 255, 0.7);
+  transition: color 0.3s ease;
+}
+
+.nav-link-premium:hover {
+  color: #d4af37;
+}
+
+.nav-link-premium::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 1px;
+  background: #d4af37;
+  transition: width 0.3s ease;
+}
+
+.nav-link-premium:hover::after {
+  width: 100%;
+}
+
+.premium-shadow {
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+}
+
+.variation-chip {
+  background: rgba(212, 175, 55, 0.1);
+  border: 1px solid rgba(212, 175, 55, 0.2);
+  color: #d4af37;
+}

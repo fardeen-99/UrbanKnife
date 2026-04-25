@@ -45,6 +45,35 @@ const ProductSchema = new mongoose.Schema({
     }
   },
 
+  // --- ORIGINAL PRODUCT's own attributes ---
+  color: {
+    type: String,
+    default: "Default"
+  },
+
+  material: {
+    type: String,
+    default: ""
+  },
+
+  sizes: [
+    {
+      size: {
+        type: String,
+        enum: ["XS", "S", "M", "L", "XL", "XXL"],
+        required: true
+      },
+      stock: {
+        type: Number,
+        default: 0
+      },
+      price: {
+        type: Number // optional price override for this specific size
+      }
+    }
+  ],
+
+  // --- ADDITIONAL VARIATIONS (different colorways) ---
   variation: [
     {
       color: {

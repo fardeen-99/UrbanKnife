@@ -182,10 +182,12 @@ const Header = () => {
 };
 
 const NavLinks = () => {
+    const user=useSelector((state)=>state.auth.user);
     const links = [
         { name: 'MEN', path: '/men' },
         { name: 'WOMEN', path: '/women' },
         { name: 'SNEAKERS', path: '/sneakers' },
+        user?.role==="seller" && { name: 'SELLERSDASHBOARD', path: '/seller' }
     ];
 
     return (

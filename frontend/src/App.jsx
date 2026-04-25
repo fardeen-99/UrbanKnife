@@ -11,6 +11,11 @@ import Home from './features/Products/pages/Home'
 import AppLayout from './features/Products/pages/Applayout'
 import Product from './features/Products/pages/Product'
 import DetailProduct from './features/Products/pages/DetailProduct'
+import Protected from './features/Products/components/Protected'
+import SellerProductCreate from './features/Products/pages/SellerProductCreate'
+import SellerAllproducts from './features/Products/pages/SellerAllproducts'
+import SellerLayout from './features/Products/pages/SellerLayout'
+import SellerDetailProducts from './features/Products/pages/SellerDetailProducts'
 
 function App() {
   const [showLoader, setShowLoader] = useState(() => {
@@ -58,7 +63,30 @@ function App() {
           element:<DetailProduct />
         }
       ]
-    }, {
+    },
+    {
+path:"/seller",
+element:
+<Protected>
+  <SellerLayout />
+</Protected>
+,children:[
+  {
+    path:"/seller",
+    element:<SellerAllproducts />
+  },
+  {
+    path: "/seller/createProduct",
+    element: <SellerProductCreate />
+  },
+  {
+    path: "/seller/product/:id",
+    element: <SellerDetailProducts />
+  }
+]
+
+    },
+    {
       path: "/forget-password",
       element: <ForgetPassword />
     }, {

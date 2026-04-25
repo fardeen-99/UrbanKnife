@@ -72,3 +72,21 @@ export const addVariation=async (id,formData)=>{
         throw error;
     }
 }
+export const getSellerAllProducts=async()=>{
+    try {
+        const response=await axiosInstance.get("/seller/products");
+        return response.data;
+    }
+    catch(error){
+        throw error;
+    }
+}
+export const getSellerProductDetail=async(id)=>{
+    try {
+        const response=await axiosInstance.get(`/seller/product/${id}`);
+        return response.data;
+    }
+    catch(error){
+        throw error;
+    }
+}
