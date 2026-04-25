@@ -7,6 +7,10 @@ import ResetPassword from './features/auth/pages/ResetPassword'
 import VerifyPassword from './features/auth/pages/VerifyPassword'
 import { useState } from 'react'
 import Loader from './features/auth/components/Loader'
+import Home from './features/Products/pages/Home'
+import AppLayout from './features/Products/pages/Applayout'
+import Product from './features/Products/pages/Product'
+import DetailProduct from './features/Products/pages/DetailProduct'
 
 function App() {
   const [showLoader, setShowLoader] = useState(() => {
@@ -35,7 +39,25 @@ function App() {
       element: <Register />
     }, {
       path: "/",
-      element: (<h1>Home</h1>)
+      element:<AppLayout />
+      ,children:[
+        {
+          path:"/",
+          element:<Home />
+        },{
+          path:"/men",
+          element:<Product />
+        },{
+          path:"/women",
+          element:<Product />
+        },{
+          path:"/sneakers",
+          element:<Product />
+        },{
+          path:"/product/:id",
+          element:<DetailProduct />
+        }
+      ]
     }, {
       path: "/forget-password",
       element: <ForgetPassword />

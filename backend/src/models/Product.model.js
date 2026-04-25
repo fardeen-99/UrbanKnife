@@ -40,49 +40,51 @@ const ProductSchema = new mongoose.Schema({
     },
     genre: {
       type: String,
-      enum: ["male","female","kids"],
+      enum: ["male","female","sneaker"],
       required: true
     }
   },
 
   variation: [
     {
-      attributes: {
-        type: Map,
-        of: String   // color, material, etc
-      },
-
-      size: {
+      color: {
         type: String,
-        enum: ["XS","S","M","L","XL","XXL"]
       },
-
-      stock: {
-        type: Number,
-        default: 0
+      material: {
+        type: String,
       },
-
       images: [
         {
           url: {
             type: String,
-            required: true
           }
         }
       ],
-
-      price: {
-        type: Number // optional override
-      }
+      sizes: [
+        {
+          size: {
+            type: String,
+            enum: ["XS", "S", "M", "L", "XL", "XXL"],
+            required: true
+          },
+          stock: {
+            type: Number,
+            default: 0
+          },
+          price: {
+            type: Number // optional price override for this specific size
+          }
+        }
+      ]
     }
   ],
 
   sellerID: {
     type: mongoose.Schema.Types.ObjectId,
     required: true,
-    ref: "user"
+    ref: "User"
   }
 
 }, { timestamps: true });
 
-export const Product = mongoose.model("product", ProductSchema);
+export const Product = mongoose.model("Product", ProductSchema);

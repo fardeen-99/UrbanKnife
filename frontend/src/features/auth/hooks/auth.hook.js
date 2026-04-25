@@ -36,6 +36,7 @@ const HandleLogout=async()=>{
     try{
         const response=await logout()
         dispatch(setuser(null))
+        return response;
     }catch(error){
         dispatch(seterror(error))
     }finally{

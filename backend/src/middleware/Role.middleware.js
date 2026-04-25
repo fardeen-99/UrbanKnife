@@ -15,6 +15,9 @@ async function RoleMiddleware(req,res,next){
         if(!user){
             return next(new HandleError(404,"User not found"));
         }
+        if(user.role !== "seller" ){
+            return next(new HandleError(403,"User is not authorized to create product"));
+        }
         req.role=user.role;
         req.user=user._id;
         next();
