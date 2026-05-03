@@ -125,9 +125,8 @@ const DetailProduct = () => {
                             </p>
 
                             {/* Variant Selectors */}
-                            {product.variation?.length > 0 && (
-                                <section className="space-y-8">
-                                    {/* Color Selection */}
+                            <section className="space-y-8">
+                                {/* Color Selection */}
                                     <div className="space-y-4">
                                         <h4 className="text-[11px] font-black tracking-[0.2em] text-black uppercase">
                                             Color: <span className="text-gray-400 ml-2">
@@ -216,7 +215,6 @@ const DetailProduct = () => {
                                         )}
                                     </div>
                                 </section>
-                            )}
 
                             {/* Add to Bag */}
                             <section className="space-y-4">

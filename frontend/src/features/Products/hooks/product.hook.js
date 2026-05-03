@@ -1,6 +1,6 @@
-import { createProduct,getProductById,getMaleProducts,getFemaleProducts,getSneakers,addVariation, getSellerAllProducts, getSellerProductDetail } from "../services/product.api";
+import { createProduct,getProductById,getMaleProducts,getFemaleProducts,getSneakers,addVariation, getSellerAllProducts, getSellerProductDetail, deleteProduct, DeleteVariation } from "../services/product.api";
 import{useDispatch} from 'react-redux'
-import {setLoading,setError,setProducts,setCurrentProduct} from '../state/product.slice'
+import {setLoading,setError,setProducts,setCurrentProduct,setDeletedVariation} from '../state/product.slice'
 
 const useProduct=()=>{
     const dispatch = useDispatch()
@@ -30,7 +30,7 @@ const handleGetMaleProducts=async()=>{
         
     }
     catch(error){
-        dispatch(setError(error.response.data.message|| error.message))
+        dispatch(setError(error.response?.data?.message|| error.message))
     }
     finally{
         dispatch(setLoading(false))
@@ -44,7 +44,7 @@ const handleGetFemaleProducts=async()=>{
         
     }
     catch(error){
-        dispatch(setError(error.response.data.message|| error.message))
+        dispatch(setError(error.response?.data?.message|| error.message))
     }
     finally{
         dispatch(setLoading(false))
@@ -58,7 +58,7 @@ const handleGetSneakers=async()=>{
         
     }
     catch(error){
-        dispatch(setError(error.response.data.message|| error.message))
+        dispatch(setError(error.response?.data?.message|| error.message))
     }
     finally{
         dispatch(setLoading(false))
@@ -73,7 +73,7 @@ const handleGetProductById=async(id)=>{
         
     }
     catch(error){
-        dispatch(setError(error.response.data.message|| error.message))
+        dispatch(setError(error.response?.data?.message|| error.message))
     }
     finally{
         dispatch(setLoading(false))
@@ -105,7 +105,7 @@ const handleGetSellerAllProducts=async()=>{
         
     }
     catch(error){
-        dispatch(setError(error.response.data.message|| error.message))
+        dispatch(setError(error.response?.data?.message|| error.message))
     }
     finally{
         dispatch(setLoading(false))
@@ -119,14 +119,41 @@ const handleGetSellerProductDetail=async(id)=>{
         
     }
     catch(error){
-        dispatch(setError(error.response.data.message|| error.message))
+        dispatch(setError(error.response?.data?.message|| error.message))
     }
     finally{
         dispatch(setLoading(false))
     }
 } 
 
-return {handleCreateProduct,handleGetMaleProducts,handleGetFemaleProducts,handleGetSneakers,handleGetProductById,handleAddVariation,handleGetSellerAllProducts,handleGetSellerProductDetail}
+
+const handleDeleteProduct=async(id)=>{
+    dispatch(setLoading(true))
+    try {
+        const response=await deleteProduct(id)
+        
+    }
+    catch(error){
+        dispatch(setError(error.response?.data?.message|| error.message))
+    }
+    finally{
+        dispatch(setLoading(false))
+    }
+} 
+const handleDeleteVariation=async(id,variationId)=>{
+    dispatch(setLoading(true))
+    try {
+        const response=await DeleteVariation(id,variationId)
+        dispatch(setDeletedVariation(variationId))
+    }
+    catch(error){
+        dispatch(setError(error.response.data.message|| error.message))
+    }
+    finally{
+        dispatch(setLoading(false))
+    }
+}
+return {handleCreateProduct,handleGetMaleProducts,handleGetFemaleProducts,handleGetSneakers,handleGetProductById,handleAddVariation,handleGetSellerAllProducts,handleGetSellerProductDetail,handleDeleteProduct,handleDeleteVariation}
 
 }
 

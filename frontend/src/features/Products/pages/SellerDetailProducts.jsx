@@ -5,18 +5,19 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
     ChevronLeft, Plus, Image as ImageIcon, Layers, Palette, 
     Trash2, Upload, X, Check, ArrowRight, Package, Info, 
-    Maximize2, MoreVertical, Edit2
+    Maximize2, MoreVertical
 } from 'lucide-react';
 import useProduct from '../hooks/product.hook';
 import SellerHeader from './SellerHeader';
 import './Seller.css';
-
+import { useNavigate } from 'react-router-dom';
 const VALID_SIZES = ["XS", "S", "M", "L", "XL", "XXL"];
 
 const SellerDetailProducts = () => {
     const { id } = useParams();
+    const navigate = useNavigate();
     const { currentProduct, loading } = useSelector((state) => state.product);
-    const { handleGetSellerProductDetail, handleAddVariation } = useProduct();
+    const { handleGetSellerProductDetail, handleAddVariation,handleDeleteProduct,handleDeleteVariation } = useProduct();
     
     const [isAddingVariation, setIsAddingVariation] = useState(false);
     const [activeImageIndex, setActiveImageIndex] = useState(0);
@@ -112,8 +113,13 @@ const SellerDetailProducts = () => {
                     </Link>
                     
                     <div className="flex items-center gap-4">
-                        <button className="p-3 rounded-full border border-white/5 hover:bg-white/5 transition-colors">
-                            <Edit2 size={18} className="text-gray-400" />
+                        <button
+                        onClick={()=>{
+                            handleDeleteProduct(id)
+                            navigate("/seller")
+                        }}
+                        className="p-3 rounded-full border border-white/5 hover:bg-white/5 transition-colors">
+                            <Trash2 size={18} className="text-gray-400" />
                         </button>
                         <button className="p-3 rounded-full border border-white/5 hover:bg-white/5 transition-colors">
                             <Maximize2 size={18} className="text-gray-400" />
@@ -246,7 +252,9 @@ const SellerDetailProducts = () => {
                                             <h4 className="text-sm font-bold uppercase tracking-widest text-white">{variant.color}</h4>
                                         </div>
                                     </div>
-                                    <button className="text-gray-600 hover:text-rose-500 transition-colors">
+                                    <button 
+                                    onClick={()=>{handleDeleteVariation(id,variant._id)}} 
+                                    className="text-gray-600 hover:text-rose-500 transition-colors">
                                         <Trash2 size={18} />
                                     </button>
                                 </div>

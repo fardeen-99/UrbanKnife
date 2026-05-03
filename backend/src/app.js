@@ -6,6 +6,7 @@ import passport from "passport";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import ProductRoute from "./routes/Product.route.js";
 import configure from "./config/config.js";
+import cartRoute from "./routes/cart.route.js";
 
 const app=express();
 
@@ -30,6 +31,7 @@ app.use(cookieParser());
 
 app.use("/api/auth",authRoute);
 app.use("/api/product",ProductRoute);
+app.use("/api/cart",cartRoute);
 
 
 app.use(errorHandler);

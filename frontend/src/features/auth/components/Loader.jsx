@@ -15,16 +15,13 @@ const GREETINGS = [
 ];
 
 // ULTRA SNAPPY TIMING
-const WORD_DURATION = 150;      // ms each word is fully visible
-const TRANSITION_DURATION = 0.15; // seconds for framer motion crossfade
+const WORD_DURATION = 100;      // ms each word is fully visible
+const TRANSITION_DURATION = 0.10; // seconds for framer motion crossfade
 
 const Loader = ({ onComplete }) => {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [phase, setPhase] = useState("greetings"); // "greetings" | "curtain"
     const [showGreeting, setShowGreeting] = useState(true);
-    const[on,seton]=useState(true)
-     if(!on) return;
-
     // Determine if we are in the last two greetings for the theme switch
     const isLastTwo = currentIndex >= GREETINGS.length - 2;
 
@@ -82,6 +79,7 @@ const Loader = ({ onComplete }) => {
                     <motion.div
                         key="greeting-screen"
                         className="fixed inset-0 z-[9999] flex items-center justify-center overflow-hidden"
+                        initial={{ backgroundColor: "#FFFFFF" }}
                         animate={{
                             backgroundColor: isLastTwo ? "#000000" : "#FFFFFF"
                         }}
@@ -161,7 +159,6 @@ const CurtainReveal = ({ onDone }) => {
             if (onDone) onDone();
         }, 850);
         return () => clearTimeout(timer);
-        seton(false)
     }, [onDone]);
 
     return (

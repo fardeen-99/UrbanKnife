@@ -30,6 +30,9 @@ const productSlice = createSlice({
     resetProductState: (state) => {
       return initialState;
     },
+    setDeletedVariation: (state, action) => {
+      state.currentProduct.variation = state.currentProduct.variation.filter((item) => item._id !== action.payload);
+    },
   },
 });
 
@@ -40,6 +43,7 @@ export const {
   setError,
   clearError,
   resetProductState,
+  setDeletedVariation,
 } = productSlice.actions;
 
 export default productSlice.reducer;

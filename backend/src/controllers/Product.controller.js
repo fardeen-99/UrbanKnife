@@ -256,3 +256,53 @@ export const GetsellerDetailProduct=async(req,res,next)=>{
         next(error)
     }
 }
+
+export const DeleteProduct=async(req,res,next)=>{
+    try {
+        const product=await productmodel.findById(req.params.id)
+        if(!product){
+            return next(new HandleError(404,"Product not found"))
+        }
+        if(product.sellerID.toString()!==req.user.toString()){
+            return next(new HandleError(403,"You are not authorized to access this product"))
+        }
+        await productmodel.findByIdAndDelete(req.params.id)
+        res.status(200).json({
+            success:true,
+            message:"Product deleted successfully"
+        })
+    } catch (error) {
+        next(error)
+    }
+}
+
+export const DeleteVariation = async (req, res, next) => {
+  try {
+    const { id, variationId } = req.params;
+
+    const product = await productmodel.findById(id);
+
+    if (!product) {
+      return next(new HandleError(404, "Product not found"));
+    }
+
+    // Optional auth check
+    // if (product.sellerID.toString() !== req.user.toString()) {
+    //   return next(new HandleError(403, "Unauthorized"));
+    // }
+
+    // Filter out the variation
+    product.variation = product.variation.filter(
+      (item) => item._id.toString() !== variationId
+    );
+
+    await product.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Variation deleted successfully",
+    });
+  } catch (error) {
+    next(error);
+  }
+};

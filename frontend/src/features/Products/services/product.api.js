@@ -90,3 +90,23 @@ export const getSellerProductDetail=async(id)=>{
         throw error;
     }
 }
+
+export const deleteProduct=async(id)=>{
+    try {
+        const response=await axiosInstance.delete(`/${id}`);
+        return response.data;
+    }
+    catch(error){
+        throw error;
+    }
+}
+export const DeleteVariation=async(id,variationId)=>{
+    try {
+        const response=await axiosInstance.delete(`/${id}/variation/${variationId}`);
+        return response.data;
+    }
+    catch(error){
+        throw error;
+    }
+}
+

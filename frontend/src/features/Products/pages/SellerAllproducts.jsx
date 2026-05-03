@@ -93,11 +93,12 @@ const SellerAllproducts = () => {
                         
                         {products?.map((product, index) => (
                             <motion.div 
-                                key={product._id} 
-                                variants={itemVariants}
-                                className="seller-card rounded-3xl overflow-hidden group flex flex-col h-full"
-                                
-                                >
+                            key={product._id} 
+                            variants={itemVariants}
+                            className="seller-card rounded-3xl overflow-hidden group flex flex-col h-full"
+                            
+                            >
+                                    
                                 {console.log("this is the product",product)}
                                 
                                 <div className="relative aspect-[4/5] overflow-hidden">
