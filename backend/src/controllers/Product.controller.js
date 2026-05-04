@@ -306,3 +306,106 @@ export const DeleteVariation = async (req, res, next) => {
     next(error);
   }
 };
+
+export const UpdateProduct = async(req, res, next) => {
+    try {
+        const product = await productmodel.findById(req.params.id);
+        if(!product){
+            return next(new HandleError(404, "Product not found"));
+        }
+        if(product.sellerID.toString() !== req.user.toString()){
+            return next(new HandleError(403, "You are not authorized to access this product"));
+        }
+        
+        let { title, category, description, price, color, material, sizes } = req.body;
+
+        // When using FormData, objects and arrays are sent as JSON strings.
+        // We MUST parse them back into objects/arrays before giving them to Mongoose.
+        if (typeof sizes === 'string') sizes = JSON.parse(sizes);
+        if (typeof price === 'string') price = JSON.parse(price);
+        if (typeof category === 'string') category = JSON.parse(category);
+
+        // Update fields only if they are provided
+        if (title !== undefined) product.title = title;
+        if (description !== undefined) product.description = description;
+        if (color !== undefined) product.color = color;
+        if (material !== undefined) product.material = material;
+        if (sizes !== undefined) product.sizes = sizes;
+
+        // Handle nested price updates safely
+        if (price) {
+            if (price.amount !== undefined) product.price.amount = price.amount;
+            if (price.currency !== undefined) product.price.currency = price.currency;
+        }
+
+        // Handle nested category updates safely
+        if (category) {
+            if (category.clothType !== undefined) product.category.clothType = category.clothType;
+            if (category.genre !== undefined) product.category.genre = category.genre;
+        }
+
+        // Handle image uploads if any are provided
+        if (req.files && req.files.length > 0) {
+            const uploadedImages = await Promise.all(req.files.map(async (image) => {
+                const file = await uploadFiles(image.buffer, image.originalname);
+                return { url: file.url };
+            }));
+            
+            // Replace old images with the new ones
+            product.image = uploadedImages;
+        }
+
+        await product.save();
+
+        res.status(200).json({
+            success: true,
+            message: "Product updated successfully",
+            product
+        });
+
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const UpdateVariation=async(req,res,next)=>{
+    try {
+        const {id,variationId}=req.params;
+        const product=await productmodel.findById(id);
+        if(!product){
+            return next(new HandleError(404,"Product not found"));
+        }
+        if(product.sellerID.toString()!==req.user.toString()){
+            return next(new HandleError(403,"You are not authorized to access this product"));
+        }
+        const variation=product.variation.id(variationId);
+        if(!variation){
+            return next(new HandleError(404,"Variation not found"));
+        }
+        let {color,material,sizes}=req.body;
+        
+        // Parse sizes string back to array (FormData sends JSON strings)
+        if (typeof sizes === 'string') sizes = JSON.parse(sizes);
+        if(color)variation.color=color;
+        if(material)variation.material=material;
+        if(sizes)variation.sizes=sizes;
+
+        if(req.files && req.files.length > 0){
+            const uploadedImages = await Promise.all(req.files.map(async (image) => {
+                const file = await uploadFiles(image.buffer, image.originalname);
+                return { url: file.url };
+            }));
+            
+            // Replace old images with the new ones
+            variation.images = uploadedImages;
+        }
+        await product.save();
+        res.status(200).json({
+            success:true,
+            message:"Variation updated successfully",
+            product
+        });
+    } catch (error) {
+        next(error);
+    }
+}

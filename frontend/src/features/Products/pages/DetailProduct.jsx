@@ -15,10 +15,13 @@ import {
     ArrowRight
 } from 'lucide-react';
 import useProduct from '../hooks/product.hook';
+import  useCart  from '../../Cart/hooks/cart.hook';
 
 const DetailProduct = () => {
     const { id } = useParams();
     const { handleGetProductById } = useProduct();
+    const {HandleAddToCart}=useCart();
+    
     const { currentProduct: product, loading, error } = useSelector((state) => state.product);
 
     const [selectedVariantIndex, setSelectedVariantIndex] = useState(null);
@@ -64,9 +67,9 @@ const DetailProduct = () => {
         <motion.div 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="min-h-screen bg-[#fafafa] pt-24 pb-20"
+            className="flex-1 bg-[#fafafa] pt-24 pb-20"
         >
-            <div className="max-w-[1600px] mx-auto px-4 md:px-10 lg:px-16">
+            <div className="max-w-[1600px] mx-auto px-4 md:px-10 lg:px-16 flex-1">
                 
                 {/* Breadcrumbs */}
                 <div className="flex items-center gap-2 text-[10px] font-black tracking-[0.2em] text-gray-400 uppercase mb-8">
@@ -222,6 +225,9 @@ const DetailProduct = () => {
                                     disabled={!selectedSize}
                                     onClick={() => {
                                         setIsAdding(true);
+                                        
+                                        const actualVariationID = selectedVariantIndex !== null ? product.variation[selectedVariantIndex]?._id : undefined;
+                                        HandleAddToCart({productID:id,quantity:1,size:selectedSize,variationID:actualVariationID});
                                         setTimeout(() => setIsAdding(false), 2000);
                                     }}
                                     className={`w-full py-5 text-xs font-black tracking-[0.2em] rounded-full transition-all duration-500 flex items-center justify-center gap-3 relative overflow-hidden ${
@@ -294,6 +300,10 @@ const DetailProduct = () => {
             <div className="fixed bottom-0 left-0 w-full bg-white/80 backdrop-blur-md p-4 lg:hidden z-50 border-t border-gray-100">
                 <button
                     disabled={!selectedSize}
+                    onClick={() => {
+                        const actualVariationID = selectedVariantIndex !== null ? product.variation[selectedVariantIndex]?._id : undefined;
+                        HandleAddToCart({productID:id,quantity:1,size:selectedSize,variationID:actualVariationID});
+                    }}
                     className="w-full py-4 bg-black text-white text-[10px] font-black tracking-[0.3em] rounded-full flex items-center justify-center gap-3 shadow-xl active:scale-95 transition-transform"
                 >
                     {selectedSize ? `ADD TO BAG • ${product.price?.currency} ${product.price?.amount}` : 'SELECT SIZE'}

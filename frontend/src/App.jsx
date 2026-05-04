@@ -17,6 +17,7 @@ import SellerAllproducts from './features/Products/pages/SellerAllproducts'
 import SellerLayout from './features/Products/pages/SellerLayout'
 import SellerDetailProducts from './features/Products/pages/SellerDetailProducts'
 import { useAuth } from './features/auth/hooks/auth.hook'
+import Cart from './features/Cart/Pages/Cart'
 
 const router = createBrowserRouter([
   {
@@ -44,6 +45,10 @@ const router = createBrowserRouter([
       },{
         path:"/product/:id",
         element:<DetailProduct />
+      },
+      {
+        path:"/cart",
+        element:<Cart />
       }
     ]
   },

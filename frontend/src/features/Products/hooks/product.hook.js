@@ -1,4 +1,4 @@
-import { createProduct,getProductById,getMaleProducts,getFemaleProducts,getSneakers,addVariation, getSellerAllProducts, getSellerProductDetail, deleteProduct, DeleteVariation } from "../services/product.api";
+import { createProduct,getProductById,getMaleProducts,getFemaleProducts,getSneakers,addVariation, getSellerAllProducts, getSellerProductDetail, deleteProduct, DeleteVariation, UpdateVariation, UpdateProduct } from "../services/product.api";
 import{useDispatch} from 'react-redux'
 import {setLoading,setError,setProducts,setCurrentProduct,setDeletedVariation} from '../state/product.slice'
 
@@ -153,7 +153,39 @@ const handleDeleteVariation=async(id,variationId)=>{
         dispatch(setLoading(false))
     }
 }
-return {handleCreateProduct,handleGetMaleProducts,handleGetFemaleProducts,handleGetSneakers,handleGetProductById,handleAddVariation,handleGetSellerAllProducts,handleGetSellerProductDetail,handleDeleteProduct,handleDeleteVariation}
+const handleUpdateVariation=async(id,variationId,formData)=>{
+    dispatch(setLoading(true))
+    try {
+        const response=await UpdateVariation(id,variationId,formData)
+        // dispatch(setCurrentProduct(response.product))
+        return response.product;
+    }
+    catch(error){
+        dispatch(setError(error.response.data.message|| error.message))
+        return null;
+    }
+    finally{
+        dispatch(setLoading(false))
+    }
+}
+
+const handleUpdateProduct=async(id,formData)=>{
+    dispatch(setLoading(true))
+    try {
+        const response=await UpdateProduct(id,formData)
+        dispatch(setCurrentProduct(response.product))
+        return response.product;
+    }
+    catch(error){
+        dispatch(setError(error.response.data.message|| error.message))
+        return null;
+    }
+    finally{
+        dispatch(setLoading(false))
+    }
+}
+
+return {handleCreateProduct,handleGetMaleProducts,handleGetFemaleProducts,handleGetSneakers,handleGetProductById,handleAddVariation,handleGetSellerAllProducts,handleGetSellerProductDetail,handleDeleteProduct,handleDeleteVariation,handleUpdateVariation,handleUpdateProduct}
 
 }
 

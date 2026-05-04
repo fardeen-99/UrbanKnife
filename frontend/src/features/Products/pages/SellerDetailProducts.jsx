@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
     ChevronLeft, Plus, Image as ImageIcon, Layers, Palette, 
     Trash2, Upload, X, Check, ArrowRight, Package, Info, 
-    Maximize2, MoreVertical
+    Maximize2, MoreVertical, Edit2
 } from 'lucide-react';
 import useProduct from '../hooks/product.hook';
 import SellerHeader from './SellerHeader';
@@ -17,10 +17,33 @@ const SellerDetailProducts = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const { currentProduct, loading } = useSelector((state) => state.product);
-    const { handleGetSellerProductDetail, handleAddVariation,handleDeleteProduct,handleDeleteVariation } = useProduct();
+    const { handleGetSellerProductDetail, handleAddVariation,handleDeleteProduct,handleDeleteVariation,handleUpdateVariation,handleUpdateProduct } = useProduct();
     
     const [isAddingVariation, setIsAddingVariation] = useState(false);
     const [activeImageIndex, setActiveImageIndex] = useState(0);
+
+    // EDIT STATES
+    const [isEditingProduct, setIsEditingProduct] = useState(false);
+    const [editProductData, setEditProductData] = useState({
+        title: '',
+        description: '',
+        price: '',
+        color: '',
+        material: '',
+        sizes: VALID_SIZES.map(s => ({ size: s, stock: 0 })),
+        images: [],
+        previews: [],
+    });
+
+    const [isEditingVariation, setIsEditingVariation] = useState(false);
+    const [editingVariationId, setEditingVariationId] = useState(null);
+    const [editVariationData, setEditVariationData] = useState({
+        color: '',
+        material: '',
+        sizes: VALID_SIZES.map(s => ({ size: s, stock: 0 })),
+        images: [],
+        previews: [],
+    });
     const [newVariation, setNewVariation] = useState({
         color: '',
         material: '',
@@ -56,6 +79,71 @@ const SellerDetailProducts = () => {
         const updatedSizes = [...newVariation.sizes];
         updatedSizes[index].stock = parseInt(stock) || 0;
         setNewVariation(prev => ({ ...prev, sizes: updatedSizes }));
+    };
+
+    // --- EDIT PRODUCT HELPERS ---
+    const openEditProduct = () => {
+        setEditProductData({
+            title: currentProduct.title || '',
+            description: currentProduct.description || '',
+            price: currentProduct.price?.amount || '',
+            color: currentProduct.color || '',
+            material: currentProduct.material || '',
+            sizes: VALID_SIZES.map(size => {
+                const existing = currentProduct.sizes?.find(s => s.size === size);
+                return existing ? { ...existing } : { size, stock: 0 };
+            }),
+            images: [],
+            previews: [],
+        });
+        setIsEditingProduct(true);
+    };
+
+    const submitEditProduct = async () => {
+        const formData = new FormData();
+        formData.append('title', editProductData.title);
+        formData.append('description', editProductData.description);
+        formData.append('price', JSON.stringify({ amount: Number(editProductData.price), currency: currentProduct.price?.currency || 'INR' }));
+        formData.append('color', editProductData.color);
+        formData.append('material', editProductData.material);
+        formData.append('sizes', JSON.stringify(editProductData.sizes.filter(s => s.stock > 0)));
+        editProductData.images.forEach(img => formData.append('images', img));
+
+        const success = await handleUpdateProduct(id, formData);
+        if (success) {
+            setIsEditingProduct(false);
+            handleGetSellerProductDetail(id);
+        }
+    };
+
+    // --- EDIT VARIATION HELPERS ---
+    const openEditVariation = (variant) => {
+        setEditingVariationId(variant._id);
+        setEditVariationData({
+            color: variant.color || '',
+            material: variant.material || '',
+            sizes: VALID_SIZES.map(size => {
+                const existing = variant.sizes?.find(s => s.size === size);
+                return existing ? { ...existing } : { size, stock: 0 };
+            }),
+            images: [],
+            previews: [],
+        });
+        setIsEditingVariation(true);
+    };
+
+    const submitEditVariation = async () => {
+        const formData = new FormData();
+        formData.append('color', editVariationData.color);
+        formData.append('material', editVariationData.material);
+        formData.append('sizes', JSON.stringify(editVariationData.sizes.filter(s => s.stock > 0)));
+        editVariationData.images.forEach(img => formData.append('images', img));
+
+        const success = await handleUpdateVariation(id, editingVariationId, formData);
+        if (success) {
+            setIsEditingVariation(false);
+            handleGetSellerProductDetail(id);
+        }
     };
 
     const submitVariation = async () => {
@@ -113,6 +201,11 @@ const SellerDetailProducts = () => {
                     </Link>
                     
                     <div className="flex items-center gap-4">
+                        <button 
+                            onClick={openEditProduct}
+                            className="p-3 rounded-full border border-[#d4af37]/30 hover:bg-[#d4af37]/10 transition-colors shadow-lg shadow-[#d4af37]/10">
+                            <Edit2 size={18} className="text-[#d4af37]" />
+                        </button>
                         <button
                         onClick={()=>{
                             handleDeleteProduct(id)
@@ -277,7 +370,7 @@ const SellerDetailProducts = () => {
                                 
                                 <div className="mt-4 pt-6 border-t border-white/5 flex items-center justify-between">
                                     <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Material: {variant.material || 'Premium'}</span>
-                                    <button className="text-[9px] font-black text-[#d4af37] uppercase tracking-widest flex items-center gap-1">
+                                    <button onClick={() => openEditVariation(variant)} className="text-[9px] font-black text-[#d4af37] uppercase tracking-widest flex items-center gap-1 hover:text-[#f3d368] transition-colors">
                                         Edit Details <ArrowRight size={10} />
                                     </button>
                                 </div>
@@ -402,6 +495,297 @@ const SellerDetailProducts = () => {
                                         className="gold-button px-10 py-4 rounded-full text-[10px] font-black uppercase tracking-[0.2em] flex items-center gap-3 disabled:opacity-30 shadow-2xl"
                                     >
                                         {loading ? 'Curating...' : 'Register Variation'}
+                                        <ArrowRight size={16} />
+                                    </button>
+                                </div>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+
+                {/* Edit Product Modal */}
+                {isEditingProduct && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
+                        <motion.div 
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => setIsEditingProduct(false)}
+                            className="absolute inset-0 bg-black/90 backdrop-blur-sm"
+                        />
+                        <motion.div 
+                            initial={{ opacity: 0, scale: 0.9, y: 30 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.9, y: 30 }}
+                            className="relative w-full max-w-4xl bg-zinc-950 border border-white/10 rounded-[3rem] shadow-[0_50px_100px_rgba(0,0,0,0.8)] overflow-hidden flex flex-col md:flex-row"
+                        >
+                            {/* Modal Left: Visuals */}
+                            <div className="md:w-5/12 bg-zinc-900/50 p-10 border-r border-white/5 flex flex-col">
+                                <h3 className="text-xl royal-heading font-black mb-2">UPDATE <span className="gold-text">ASSETS</span></h3>
+                                <p className="text-[10px] text-gray-500 uppercase tracking-widest mb-8">Replace old photos with new ones</p>
+                                
+                                <div className="grid grid-cols-2 gap-4 mb-8">
+                                    <label className="aspect-[3/4] border-2 border-dashed border-white/10 rounded-2xl flex flex-col items-center justify-center cursor-pointer hover:border-[#d4af37]/50 hover:bg-[#d4af37]/5 transition-all group">
+                                        <Upload className="text-gray-500 group-hover:text-[#d4af37]" />
+                                        <span className="text-[8px] font-black uppercase tracking-widest mt-2 text-gray-500 group-hover:text-[#d4af37]">Upload</span>
+                                        <input 
+                                            type="file" 
+                                            multiple 
+                                            onChange={(e) => {
+                                                const files = Array.from(e.target.files);
+                                                setEditProductData(prev => ({
+                                                    ...prev,
+                                                    images: [...prev.images, ...files],
+                                                    previews: [...prev.previews, ...files.map(f => URL.createObjectURL(f))]
+                                                }));
+                                            }} 
+                                            className="hidden" 
+                                        />
+                                    </label>
+                                    {editProductData.previews?.map((url, i) => (
+                                        <div key={i} className="relative aspect-[3/4] rounded-2xl overflow-hidden shadow-2xl group">
+                                            <img src={url} alt="" className="w-full h-full object-cover" />
+                                            <button 
+                                                onClick={() => {
+                                                    setEditProductData(prev => ({
+                                                        ...prev,
+                                                        images: prev.images.filter((_, idx) => idx !== i),
+                                                        previews: prev.previews.filter((_, idx) => idx !== i)
+                                                    }));
+                                                }}
+                                                className="absolute top-2 right-2 p-1.5 bg-black/80 rounded-full text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                                            >
+                                                <X size={10} />
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                                {editProductData.images.length === 0 && (
+                                    <div className="flex-grow flex items-center justify-center text-center p-6 border border-white/5 rounded-3xl bg-black/20">
+                                        <p className="text-[9px] text-gray-500 uppercase font-black tracking-[0.2em]">Current images will be kept if no new ones are uploaded.</p>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Modal Right: Form */}
+                            <div className="md:w-7/12 p-10 flex flex-col h-full max-h-[85vh] overflow-y-auto custom-scrollbar">
+                                <div className="flex items-center justify-between mb-10">
+                                    <h3 className="text-xl royal-heading font-black">CURATION <span className="gold-text">DETAILS</span></h3>
+                                    <button onClick={() => setIsEditingProduct(false)} className="text-gray-500 hover:text-white transition-colors">
+                                        <X size={24} />
+                                    </button>
+                                </div>
+
+                                <div className="space-y-8 mb-10">
+                                    <div className="space-y-2">
+                                        <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest">Masterpiece Title</label>
+                                        <input 
+                                            type="text" 
+                                            value={editProductData.title}
+                                            onChange={(e) => setEditProductData(prev => ({ ...prev, title: e.target.value }))}
+                                            className="premium-input w-full px-6 py-4 rounded-2xl text-xs font-bold uppercase tracking-widest"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest">Description</label>
+                                        <textarea 
+                                            value={editProductData.description}
+                                            onChange={(e) => setEditProductData(prev => ({ ...prev, description: e.target.value }))}
+                                            className="premium-input w-full px-6 py-4 rounded-2xl text-xs font-bold uppercase tracking-widest h-24 resize-none"
+                                        />
+                                    </div>
+
+                                    <div className="grid grid-cols-3 gap-6">
+                                        <div className="space-y-2">
+                                            <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest">Price</label>
+                                            <input 
+                                                type="number" 
+                                                value={editProductData.price}
+                                                onChange={(e) => setEditProductData(prev => ({ ...prev, price: e.target.value }))}
+                                                className="premium-input w-full px-6 py-4 rounded-2xl text-xs font-bold uppercase tracking-widest"
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest">Color</label>
+                                            <input 
+                                                type="text" 
+                                                value={editProductData.color}
+                                                onChange={(e) => setEditProductData(prev => ({ ...prev, color: e.target.value }))}
+                                                className="premium-input w-full px-6 py-4 rounded-2xl text-xs font-bold uppercase tracking-widest"
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest">Material</label>
+                                            <input 
+                                                type="text" 
+                                                value={editProductData.material}
+                                                onChange={(e) => setEditProductData(prev => ({ ...prev, material: e.target.value }))}
+                                                className="premium-input w-full px-6 py-4 rounded-2xl text-xs font-bold uppercase tracking-widest"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-4">
+                                        <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Inventory Distribution</label>
+                                        <div className="grid grid-cols-3 gap-3">
+                                            {editProductData.sizes?.map((s, i) => (
+                                                <div key={i} className="bg-white/5 p-4 rounded-2xl border border-white/5 flex flex-col items-center">
+                                                    <span className="text-[10px] font-black text-gray-400 mb-1">{s.size}</span>
+                                                    <input 
+                                                        type="number" 
+                                                        value={s.stock}
+                                                        onChange={(e) => {
+                                                            const updatedSizes = [...editProductData.sizes];
+                                                            updatedSizes[i].stock = parseInt(e.target.value) || 0;
+                                                            setEditProductData(prev => ({ ...prev, sizes: updatedSizes }));
+                                                        }}
+                                                        className="w-full text-center bg-transparent border-none outline-none font-bold text-[#d4af37]"
+                                                    />
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="mt-auto pt-8 border-t border-white/5 flex items-center justify-between">
+                                    <button 
+                                        onClick={submitEditProduct}
+                                        disabled={loading}
+                                        className="gold-button ml-auto px-10 py-4 rounded-full text-[10px] font-black uppercase tracking-[0.2em] flex items-center gap-3 disabled:opacity-30 shadow-2xl"
+                                    >
+                                        {loading ? 'Saving...' : 'Update Masterpiece'}
+                                        <ArrowRight size={16} />
+                                    </button>
+                                </div>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+
+                {/* Edit Variation Modal */}
+                {isEditingVariation && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
+                        <motion.div 
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => setIsEditingVariation(false)}
+                            className="absolute inset-0 bg-black/90 backdrop-blur-sm"
+                        />
+                        <motion.div 
+                            initial={{ opacity: 0, scale: 0.9, y: 30 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.9, y: 30 }}
+                            className="relative w-full max-w-4xl bg-zinc-950 border border-white/10 rounded-[3rem] shadow-[0_50px_100px_rgba(0,0,0,0.8)] overflow-hidden flex flex-col md:flex-row"
+                        >
+                            {/* Modal Left: Visuals */}
+                            <div className="md:w-5/12 bg-zinc-900/50 p-10 border-r border-white/5 flex flex-col">
+                                <h3 className="text-xl royal-heading font-black mb-2">UPDATE <span className="gold-text">ASSETS</span></h3>
+                                <p className="text-[10px] text-gray-500 uppercase tracking-widest mb-8">Replace old photos with new ones</p>
+                                
+                                <div className="grid grid-cols-2 gap-4 mb-8">
+                                    <label className="aspect-[3/4] border-2 border-dashed border-white/10 rounded-2xl flex flex-col items-center justify-center cursor-pointer hover:border-[#d4af37]/50 hover:bg-[#d4af37]/5 transition-all group">
+                                        <Upload className="text-gray-500 group-hover:text-[#d4af37]" />
+                                        <span className="text-[8px] font-black uppercase tracking-widest mt-2 text-gray-500 group-hover:text-[#d4af37]">Upload</span>
+                                        <input 
+                                            type="file" 
+                                            multiple 
+                                            onChange={(e) => {
+                                                const files = Array.from(e.target.files);
+                                                setEditVariationData(prev => ({
+                                                    ...prev,
+                                                    images: [...prev.images, ...files],
+                                                    previews: [...prev.previews, ...files.map(f => URL.createObjectURL(f))]
+                                                }));
+                                            }} 
+                                            className="hidden" 
+                                        />
+                                    </label>
+                                    {editVariationData.previews?.map((url, i) => (
+                                        <div key={i} className="relative aspect-[3/4] rounded-2xl overflow-hidden shadow-2xl group">
+                                            <img src={url} alt="" className="w-full h-full object-cover" />
+                                            <button 
+                                                onClick={() => {
+                                                    setEditVariationData(prev => ({
+                                                        ...prev,
+                                                        images: prev.images.filter((_, idx) => idx !== i),
+                                                        previews: prev.previews.filter((_, idx) => idx !== i)
+                                                    }));
+                                                }}
+                                                className="absolute top-2 right-2 p-1.5 bg-black/80 rounded-full text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                                            >
+                                                <X size={10} />
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                                {editVariationData.images.length === 0 && (
+                                    <div className="flex-grow flex items-center justify-center text-center p-6 border border-white/5 rounded-3xl bg-black/20">
+                                        <p className="text-[9px] text-gray-500 uppercase font-black tracking-[0.2em]">Current images will be kept if no new ones are uploaded.</p>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Modal Right: Form */}
+                            <div className="md:w-7/12 p-10 flex flex-col h-full max-h-[85vh] overflow-y-auto custom-scrollbar">
+                                <div className="flex items-center justify-between mb-10">
+                                    <h3 className="text-xl royal-heading font-black">CURATION <span className="gold-text">DETAILS</span></h3>
+                                    <button onClick={() => setIsEditingVariation(false)} className="text-gray-500 hover:text-white transition-colors">
+                                        <X size={24} />
+                                    </button>
+                                </div>
+
+                                <div className="space-y-8 mb-10">
+                                    <div className="grid grid-cols-2 gap-6">
+                                        <div className="space-y-2">
+                                            <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest">Variation Hue</label>
+                                            <input 
+                                                type="text" 
+                                                value={editVariationData.color}
+                                                onChange={(e) => setEditVariationData(prev => ({ ...prev, color: e.target.value }))}
+                                                className="premium-input w-full px-6 py-4 rounded-2xl text-xs font-bold uppercase tracking-widest"
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest">Material Base</label>
+                                            <input 
+                                                type="text" 
+                                                value={editVariationData.material}
+                                                onChange={(e) => setEditVariationData(prev => ({ ...prev, material: e.target.value }))}
+                                                className="premium-input w-full px-6 py-4 rounded-2xl text-xs font-bold uppercase tracking-widest"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-4">
+                                        <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Inventory Distribution</label>
+                                        <div className="grid grid-cols-3 gap-3">
+                                            {editVariationData.sizes?.map((s, i) => (
+                                                <div key={i} className="bg-white/5 p-4 rounded-2xl border border-white/5 flex flex-col items-center">
+                                                    <span className="text-[10px] font-black text-gray-400 mb-1">{s.size}</span>
+                                                    <input 
+                                                        type="number" 
+                                                        value={s.stock}
+                                                        onChange={(e) => {
+                                                            const updatedSizes = [...editVariationData.sizes];
+                                                            updatedSizes[i].stock = parseInt(e.target.value) || 0;
+                                                            setEditVariationData(prev => ({ ...prev, sizes: updatedSizes }));
+                                                        }}
+                                                        className="w-full text-center bg-transparent border-none outline-none font-bold text-[#d4af37]"
+                                                    />
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="mt-auto pt-8 border-t border-white/5 flex items-center justify-between">
+                                    <button 
+                                        onClick={submitEditVariation}
+                                        disabled={loading}
+                                        className="gold-button ml-auto px-10 py-4 rounded-full text-[10px] font-black uppercase tracking-[0.2em] flex items-center gap-3 disabled:opacity-30 shadow-2xl"
+                                    >
+                                        {loading ? 'Saving...' : 'Update Variation'}
                                         <ArrowRight size={16} />
                                     </button>
                                 </div>

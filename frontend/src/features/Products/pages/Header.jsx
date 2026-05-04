@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Search, User, Heart, ShoppingCart, Mic, LogOut, ChevronDown, Menu, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../auth/hooks/auth.hook';
+import { openCartDrawer } from '../../Cart/state/cart.slice';
 
 
 
@@ -11,7 +12,10 @@ const Header = () => {
     const [isScrolled, setIsScrolled] = useState(false);
     const [isSearchFocused, setIsSearchFocused] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const dispatch = useDispatch();
     const { user } = useSelector((state) => state.auth);
+    const { cart } = useSelector((state) => state.cart);
+    const cartItemsCount = cart?.items?.length || 0;
     const { HandleLogout } = useAuth();
     const isLoggedIn = !!user && (user.username || user.name || user._id);
 
@@ -94,9 +98,16 @@ const Header = () => {
                                 <span className="absolute top-1 right-1 w-4 h-4 bg-black text-white text-[10px] flex items-center justify-center rounded-full font-bold">0</span>
                             </button>
 
-                            <button className="relative p-2 hover:bg-gray-100 rounded-full transition-colors group">
+                            <button 
+                                onClick={() => dispatch(openCartDrawer())} 
+                                className="relative p-2 hover:bg-gray-100 rounded-full transition-colors group"
+                            >
                                 <ShoppingCart size={22} className="text-gray-700 group-hover:text-blue-600 transition-colors" />
-                                <span className="absolute top-1 right-1 w-4 h-4 bg-black text-white text-[10px] flex items-center justify-center rounded-full font-bold">2</span>
+                                {cartItemsCount > 0 && (
+                                    <span className="absolute top-1 right-1 w-4 h-4 bg-black text-white text-[10px] flex items-center justify-center rounded-full font-bold">
+                                        {cartItemsCount}
+                                    </span>
+                                )}
                             </button>
                         </div>
                     </div>
@@ -300,6 +311,8 @@ const ProfileMenu = () => {
 
                                     <div className="py-1">
                                         <MenuLink to="/profile" icon={<User size={16} />} label="My Profile" onClick={() => setIsOpen(false)} />
+
+
                                         <MenuLink to="/orders" icon={<ShoppingCart size={16} />} label="Orders" onClick={() => setIsOpen(false)} />
                                         <div className="h-[1px] bg-gray-100 my-2 mx-5" />
                                         <button 

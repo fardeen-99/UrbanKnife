@@ -109,4 +109,23 @@ export const DeleteVariation=async(id,variationId)=>{
         throw error;
     }
 }
+export const UpdateVariation=async(id,variationId,formData)=>{
+    try {
+        const response=await axiosInstance.patch(`/${id}/variation/${variationId}`,formData);
+        return response.data;
+    }
+    catch(error){
+        throw error;
+    }
+}
+
+export const UpdateProduct=async(id,formData)=>{
+    try {
+        const response=await axiosInstance.patch(`/${id}`,formData);
+        return response.data;
+    }
+    catch(error){
+        throw error;
+    }
+}
 
