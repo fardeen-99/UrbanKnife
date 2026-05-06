@@ -68,3 +68,26 @@ export const resetPassword=async({email,password})=>{
         throw error.response.data.message;
     }
 }
+
+export const UpdateUserProfile=async(formData)=>{
+    try {
+        const response=await API.patch("/update-profile",formData);
+        return response.data;
+    }
+    catch(error){
+        throw error.response.data.message;
+    }
+}
+export const UpdateProfilePic=async(formData)=>{
+    try {
+        const response=await API.patch("/update-profile",formData,{
+            headers:{
+                "Content-Type":"multipart/form-data"
+            }
+        });
+        return response.data;
+    }
+    catch(error){
+        throw error.response.data.message;
+    }
+}

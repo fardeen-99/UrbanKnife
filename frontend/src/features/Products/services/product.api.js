@@ -25,31 +25,31 @@ export const createProduct=async (formData)=>{
 //     }
 // }
 
-export const getMaleProducts=async ()=>{
+export const getMaleProducts = async (page = 1, limit = 12) => {
     try {
-        const response=await axiosInstance.get("/male");
+        const response = await axiosInstance.get(`/male?page=${page}&limit=${limit}`);
         return response.data;
     }
-    catch(error){
+    catch (error) {
         throw error;
     }
 }
 
-export const getFemaleProducts=async ()=>{
+export const getFemaleProducts = async (page = 1, limit = 12) => {
     try {
-        const response=await axiosInstance.get("/female");
+        const response = await axiosInstance.get(`/female?page=${page}&limit=${limit}`);
         return response.data;
     }
-    catch(error){
+    catch (error) {
         throw error;
     }
 }
-export const getSneakers=async ()=>{
+export const getSneakers = async (page = 1, limit = 12) => {
     try {
-        const response=await axiosInstance.get("/sneakers");
+        const response = await axiosInstance.get(`/sneakers?page=${page}&limit=${limit}`);
         return response.data;
     }
-    catch(error){
+    catch (error) {
         throw error;
     }
 }
@@ -72,12 +72,12 @@ export const addVariation=async (id,formData)=>{
         throw error;
     }
 }
-export const getSellerAllProducts=async()=>{
+export const getSellerAllProducts = async (page = 1, limit = 12) => {
     try {
-        const response=await axiosInstance.get("/seller/products");
+        const response = await axiosInstance.get(`/seller/products?page=${page}&limit=${limit}`);
         return response.data;
     }
-    catch(error){
+    catch (error) {
         throw error;
     }
 }
@@ -128,4 +128,5 @@ export const UpdateProduct=async(id,formData)=>{
         throw error;
     }
 }
+
 

@@ -6,21 +6,76 @@ import { motion } from 'framer-motion';
 import { ShoppingBag, Star, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
+const ProductSkeleton = () => (
+    <div className="space-y-4">
+        <div className="relative aspect-[3/4] bg-gray-200 rounded-xl animate-pulse overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full animate-[shimmer_1.5s_infinite]"></div>
+        </div>
+        <div className="space-y-2">
+            <div className="h-4 bg-gray-200 rounded animate-pulse w-3/4"></div>
+            <div className="h-3 bg-gray-200 rounded animate-pulse w-1/2"></div>
+            <div className="h-6 bg-gray-200 rounded animate-pulse w-1/4 mt-4"></div>
+        </div>
+    </div>
+);
+
 const Product = () => {
     const location = useLocation();
+    const navigate = useNavigate();
+    const observerTarget = React.useRef(null);
     const { handleGetMaleProducts, handleGetFemaleProducts, handleGetSneakers } = useProduct();
-    const { products, loading, error } = useSelector((state) => state.product);
-   
+    const { products, loading, error, hasMore, page } = useSelector((state) => state.product);
 
     useEffect(() => {
+        // Reset scroll to top when category changes
+        window.scrollTo(0, 0);
+
+        // Initial load
         if (location.pathname === '/men') {
-            handleGetMaleProducts();
+            handleGetMaleProducts(1, false);
         } else if (location.pathname === '/women') {
-            handleGetFemaleProducts();
+            handleGetFemaleProducts(1, false);
         } else if (location.pathname === '/sneakers') {
-            handleGetSneakers();
+            handleGetSneakers(1, false);
         }
     }, [location.pathname]);
+
+    const handleLoadMore = () => {
+        if (!loading && hasMore) {
+            const nextPage = page + 1;
+            if (location.pathname === '/men') {
+                handleGetMaleProducts(nextPage, true);
+            } else if (location.pathname === '/women') {
+                handleGetFemaleProducts(nextPage, true);
+            } else if (location.pathname === '/sneakers') {
+                handleGetSneakers(nextPage, true);
+            }
+        }
+    };
+
+    useEffect(() => {
+        const observer = new IntersectionObserver(
+            (entries) => {
+                if (entries[0].isIntersecting && hasMore && !loading) {
+                    handleLoadMore();
+                }
+            },
+            { 
+                rootMargin: '200px',
+                threshold: 0.1 
+            }
+        );
+
+        if (observerTarget.current) {
+            observer.observe(observerTarget.current);
+        }
+
+        return () => {
+            if (observerTarget.current) {
+                observer.unobserve(observerTarget.current);
+            }
+        };
+    }, [hasMore, loading, page, location.pathname]);
 
     const getPageTitle = () => {
         switch (location.pathname) {
@@ -31,18 +86,23 @@ const Product = () => {
         }
     };
 
-    if (loading) {
+    if (loading && products.length === 0) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-white">
-                <div className="flex flex-col items-center gap-4">
-                    <div className="w-12 h-12 border-4 border-black border-t-transparent rounded-full animate-spin"></div>
-                    <p className="text-sm font-bold tracking-widest text-gray-500 uppercase">Discovering Elegance...</p>
+            <div className="min-h-screen bg-[#fafafa] pt-32 pb-20 px-6 md:px-10">
+                <div className="max-w-[1440px] mx-auto">
+                    <div className="mb-12">
+                        <div className="h-16 w-64 bg-gray-200 rounded-lg animate-pulse mb-4"></div>
+                        <div className="h-4 w-96 bg-gray-200 rounded animate-pulse"></div>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-8 gap-y-12">
+                        {[...Array(8)].map((_, i) => <ProductSkeleton key={i} />)}
+                    </div>
                 </div>
             </div>
         );
     }
 
-    if (error) {
+    if (error && products.length === 0) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-white px-6">
                 <div className="text-center">
@@ -90,13 +150,31 @@ const Product = () => {
 
                 {/* Products Grid */}
                 {products && products.length > 0 ? (
-                    <div
-                    
-                    className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-8 gap-y-12">
-                        {products?.map((product, index) => (
-                            <ProductCard key={product._id} product={product} index={index}  />
-                        ))}
-                    </div>
+                    <>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-8 gap-y-12">
+                            {products.map((product, index) => (
+                                <ProductCard key={product._id} product={product} index={index} />
+                            ))}
+                            
+                            {/* Skeleton loaders for next page */}
+                            {loading && (
+                                [...Array(4)].map((_, i) => <ProductSkeleton key={`skeleton-${i}`} />)
+                            )}
+                        </div>
+
+                        {/* Observer Target */}
+                        <div ref={observerTarget} className="h-20 flex items-center justify-center mt-12">
+                            {loading && (
+                                <div className="flex flex-col items-center gap-3">
+                                    <div className="w-8 h-8 border-2 border-black border-t-transparent rounded-full animate-spin"></div>
+                                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-400">Discovering more...</span>
+                                </div>
+                            )}
+                            {!hasMore && products.length > 0 && (
+                                <p className="text-xs font-bold tracking-widest text-gray-400 uppercase">You've reached the end of the collection</p>
+                            )}
+                        </div>
+                    </>
                 ) : (
                     <motion.div 
                         initial={{ opacity: 0 }}

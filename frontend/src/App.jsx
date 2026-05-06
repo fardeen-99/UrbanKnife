@@ -18,6 +18,8 @@ import SellerLayout from './features/Products/pages/SellerLayout'
 import SellerDetailProducts from './features/Products/pages/SellerDetailProducts'
 import { useAuth } from './features/auth/hooks/auth.hook'
 import Cart from './features/Cart/Pages/Cart'
+import Profile from './features/Products/pages/Profile'
+import EditProfile from './features/Products/pages/EditProfile'
 
 const router = createBrowserRouter([
   {
@@ -49,6 +51,14 @@ const router = createBrowserRouter([
       {
         path:"/cart",
         element:<Cart />
+      },
+      {
+        path:"/profile",
+        element:<Profile />
+      },
+      {
+        path:"/edit-profile",
+        element:<EditProfile />
       }
     ]
   },

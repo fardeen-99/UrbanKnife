@@ -1,7 +1,8 @@
 import { Router } from "express";
 import { registerValidate,loginValidate } from "../validate/auth.validate.js";
-import { registerController,loginController,LogoutController,getmeController,GoogleController,forgetControlller,verifyController,resetController } from "../controllers/auth.controller.js";
+import { registerController,loginController,LogoutController,getmeController,GoogleController,forgetControlller,verifyController,resetController, userProfileController, updateProfileController } from "../controllers/auth.controller.js";
 import authMiddleware from "../middleware/auth.middleware.js";
+import upload from "../middleware/multer.middleware.js";
 import passport from "passport";
 import configure from "../config/config.js";
 
@@ -14,6 +15,11 @@ authRoute.post("/register",registerValidate,registerController)
 authRoute.post("/login",loginValidate,loginController)
 authRoute.post("/logout",authMiddleware,LogoutController)
 authRoute.get("/getme",authMiddleware,getmeController)
+authRoute.get("/profile", authMiddleware, userProfileController)
+authRoute.patch("/update-profile", authMiddleware, upload.single("profilePic"), updateProfileController)
+
+
+
 authRoute.post("/forget",forgetControlller)
 authRoute.post("/verify",verifyController)
 authRoute.post("/reset",resetController)

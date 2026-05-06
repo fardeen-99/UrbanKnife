@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useLocation } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -52,11 +52,21 @@ const SellerDetailProducts = () => {
         sizes: VALID_SIZES.map(s => ({ size: s, stock: 0 }))
     });
 
+    const location = useLocation();
+    
     useEffect(() => {
         if (id) {
             handleGetSellerProductDetail(id);
         }
     }, [id]);
+
+    // Handle auto-edit from query param
+    useEffect(() => {
+        const queryParams = new URLSearchParams(location.search);
+        if (queryParams.get('edit') === 'true' && currentProduct && !isEditingProduct) {
+            openEditProduct();
+        }
+    }, [location.search, currentProduct]);
 
     const handleVariationImageChange = (e) => {
         const files = Array.from(e.target.files);

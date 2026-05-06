@@ -66,37 +66,82 @@ export const CreateProduct = async (req, res, next) => {
     }
 };
 
-export const GetMaleProducts=async(req,res,next)=>{
-    try {   
-        const products=await productmodel.find({"category.genre":"male"})
+export const GetMaleProducts = async (req, res, next) => {
+    try {
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 12;
+        const skip = (page - 1) * limit;
+
+        const totalProducts = await productmodel.countDocuments({ "category.genre": "male" });
+        const products = await productmodel.find({ "category.genre": "male" })
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit);
+
         res.status(200).json({
-            success:true,
-            message:"Products fetched successfully",
-            products
+            success: true,
+            message: "Products fetched successfully",
+            products,
+            pagination: {
+                totalProducts,
+                totalPages: Math.ceil(totalProducts / limit),
+                currentPage: page,
+                hasMore: page * limit < totalProducts
+            }
         })
     } catch (error) {
         next(error)
     }
 }
-export const GetFemaleProducts=async(req,res,next)=>{
-    try {   
-        const products=await productmodel.find({"category.genre":"female"})
+export const GetFemaleProducts = async (req, res, next) => {
+    try {
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 12;
+        const skip = (page - 1) * limit;
+
+        const totalProducts = await productmodel.countDocuments({ "category.genre": "female" });
+        const products = await productmodel.find({ "category.genre": "female" })
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit);
+
         res.status(200).json({
-            success:true,
-            message:"Products fetched successfully",
-            products
+            success: true,
+            message: "Products fetched successfully",
+            products,
+            pagination: {
+                totalProducts,
+                totalPages: Math.ceil(totalProducts / limit),
+                currentPage: page,
+                hasMore: page * limit < totalProducts
+            }
         })
     } catch (error) {
         next(error)
     }
 }
-export const GetSneakerProducts=async(req,res,next)=>{
-    try {   
-        const products=await productmodel.find({"category.genre":"sneaker"})
+export const GetSneakerProducts = async (req, res, next) => {
+    try {
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 12;
+        const skip = (page - 1) * limit;
+
+        const totalProducts = await productmodel.countDocuments({ "category.genre": "sneaker" });
+        const products = await productmodel.find({ "category.genre": "sneaker" })
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit);
+
         res.status(200).json({
-            success:true,
-            message:"Products fetched successfully",
-            products
+            success: true,
+            message: "Products fetched successfully",
+            products,
+            pagination: {
+                totalProducts,
+                totalPages: Math.ceil(totalProducts / limit),
+                currentPage: page,
+                hasMore: page * limit < totalProducts
+            }
         })
     } catch (error) {
         next(error)
@@ -222,16 +267,28 @@ export const AddVariation = async (req, res, next) => {
     }
 };
 
-export const GetAllProducts=async(req,res,next)=>{
+export const GetAllProducts = async (req, res, next) => {
     try {
-        const products=await productmodel.find({sellerID:req.user})
-        if(!products){
-            return next(new HandleError(404,"Products not found"))
-        }
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 12;
+        const skip = (page - 1) * limit;
+
+        const totalProducts = await productmodel.countDocuments({ sellerID: req.user });
+        const products = await productmodel.find({ sellerID: req.user })
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit);
+
         res.status(200).json({
-            success:true,
-            message:"Products fetched successfully",
-            products
+            success: true,
+            message: "Products fetched successfully",
+            products,
+            pagination: {
+                totalProducts,
+                totalPages: Math.ceil(totalProducts / limit),
+                currentPage: page,
+                hasMore: page * limit < totalProducts
+            }
         })
     } catch (error) {
         next(error)

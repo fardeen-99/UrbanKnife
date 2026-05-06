@@ -4,6 +4,7 @@ import configure from "../config/config.js";
 import redis from "../config/Cache.js";
 import { sendmail } from "../services/mail.service.js";
 import jwt from "jsonwebtoken";
+import uploadFiles from "../services/upload.service.js";
 
 
 const generateToken=async(user,res,code)=>{
@@ -103,19 +104,13 @@ export const LogoutController=async(req,res,next)=>{
 
 export const getmeController=async(req,res,next)=>{
     try {
-        const user=await usermodel.findById(req.user.id);
+        const user=await usermodel.findById(req.user.id).select("-password");
         if(!user){
             return next(new HandleError(404,"User not found"));
         }
         res.status(200).json({
             success:true,
-            user:{
-                _id:user._id,
-                username:user.username,
-                email:user.email,
-                contact:user.contact,
-                role:user.role
-            }
+            user
         })
     }
     catch(error){
@@ -673,3 +668,71 @@ export const resetController=async(req,res,next)=>{
         next(error);
     }
 }
+
+
+export const userProfileController=async(req,res,next)=>{
+    try{
+        const user=await usermodel.findById(req.user.id);
+        res.status(200).json({
+            success:true,
+            user
+        })
+    }
+    catch(error){
+        next(error);
+    }
+}
+
+export const updateProfileController = async (req, res, next) => {
+    try {
+        const userId = req.user.id;
+        const updates = req.body;
+
+        // Find the user
+        const user = await usermodel.findById(userId);
+        if (!user) {
+            return next(new HandleError(404, "User not found"));
+        }
+
+        // Handle profile picture upload if file exists
+        if (req.file) {
+            const uploadResult = await uploadFiles(req.file.buffer, `profile_${userId}_${Date.now()}`, "/profile_pics");
+            user.profilePic = uploadResult.url;
+        }
+
+
+        // Dynamically update fields
+        // This handles top-level fields and nested location fields
+        Object.keys(updates).forEach((key) => {
+            if (key === "location" && typeof updates[key] === "object" && updates[key] !== null) {
+                // Update nested location fields individually to avoid overwriting the whole object
+                Object.keys(updates.location).forEach((locKey) => {
+                    user.location[locKey] = updates.location[locKey];
+                });
+            } else if (key !== "_id" && key !== "role") { 
+                // Protect sensitive/internal fields like _id or role if necessary
+                // You can remove the 'role' check if you want sellers to be able to change their role
+                user[key] = updates[key];
+            }
+        });
+
+        // .save() will trigger the pre-save hook for password hashing if password is provided
+        const updatedUser = await user.save();
+        const userResponse = updatedUser.toObject();
+        delete userResponse.password;
+
+        res.status(200).json({
+            success: true,
+            message: "Profile updated successfully",
+            user: userResponse
+        });
+    } catch (error) {
+        // Handle duplicate key errors (username, email, contact)
+        if (error.code === 11000) {
+            const field = Object.keys(error.keyValue)[0];
+            return next(new HandleError(400, `${field.charAt(0).toUpperCase() + field.slice(1)} already exists`));
+        }
+        next(error);
+    }
+};
+

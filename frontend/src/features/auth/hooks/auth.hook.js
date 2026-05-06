@@ -1,6 +1,6 @@
 import {seterror,setloading,setuser,setloader} from "../state/auth.slice"
 import {useDispatch} from "react-redux"
-import {register,login,logout,getme,forgetPassword,verifyPassword,resetPassword} from "../services/auth.service"
+import {register,login,logout,getme,forgetPassword,verifyPassword,resetPassword,UpdateUserProfile,UpdateProfilePic} from "../services/auth.service"
 import {useSelector} from "react-redux"
 export const useAuth=()=>{
 
@@ -94,6 +94,35 @@ const HandleResetPassword=async({email,password})=>{
     }
 }
 
+const HandleUpdateUserProfile=async({formData})=>{
+    dispatch(setloading(true))
+    try{
+        const response=await UpdateUserProfile(formData)
+        dispatch(setuser(response.user))
+        return response;
+    }catch(error){
+        dispatch(seterror(error))
+        throw error;
+    }finally{
+        dispatch(setloading(false))
+    }
+}
+
+const HandleUpdateProfilePic=async(formData)=>{
+    dispatch(setloading(true))
+    try{
+        const response=await UpdateProfilePic(formData)
+        dispatch(setuser(response.user))
+        return response;
+    }catch(error){
+        dispatch(seterror(error))
+        throw error;
+    }finally{
+        dispatch(setloading(false))
+    }
+}
+
+
     const {loader,error}=useSelector((state)=>state.auth)
 return{
     HandleRegister,
@@ -103,6 +132,8 @@ return{
     HandleForgetPassword,
     HandleVerifyPassword,
     HandleResetPassword,
+    HandleUpdateUserProfile,
+    HandleUpdateProfilePic,
     loader,
     error
 }

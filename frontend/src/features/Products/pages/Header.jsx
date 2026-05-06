@@ -8,6 +8,16 @@ import { openCartDrawer } from '../../Cart/state/cart.slice';
 
 
 
+const getOptimizedImage = (url, size = 100) => {
+    if (!url) return url;
+    if (url.includes('ik.imagekit.io')) {
+        // Append ImageKit transformation for sharpness: 2x resolution, auto focus, high quality
+        const separator = url.includes('?') ? '&' : '?';
+        return `${url}${separator}tr=w-${size},h-${size},fo-auto,q-100`;
+    }
+    return url;
+};
+
 const Header = () => {
     const [isScrolled, setIsScrolled] = useState(false);
     const [isSearchFocused, setIsSearchFocused] = useState(false);
@@ -145,9 +155,17 @@ const Header = () => {
                                 {isLoggedIn ? (
                                     <>
                                         <div className="flex items-center gap-3 px-1 py-2 mb-2">
-                                            <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-sm ${getAvatarColor(user?.username || user?.name || 'U')}`}>
-                                                {(user?.username || user?.name || 'U').charAt(0).toUpperCase()}
-                                            </div>
+                                            {user?.profilePic ? (
+                                                <img 
+                                                    src={getOptimizedImage(user.profilePic, 80)} 
+                                                    alt={user?.username || user?.name} 
+                                                    className="w-10 h-10 rounded-full object-cover shadow-sm border border-gray-100"
+                                                />
+                                            ) : (
+                                                <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-sm ${getAvatarColor(user?.username || user?.name || 'U')}`}>
+                                                    {(user?.username || user?.name || 'U').charAt(0).toUpperCase()}
+                                                </div>
+                                            )}
                                             <div>
                                                 <p className="text-[10px] text-gray-400 font-bold tracking-widest uppercase">Welcome back,</p>
                                                 <p className="text-sm font-black text-black truncate max-w-[150px] uppercase tracking-tighter">{user?.username || user?.name}</p>
@@ -272,12 +290,20 @@ const ProfileMenu = () => {
         <div className="relative">
             <button 
                 onClick={() => setIsOpen(!isOpen)}
-                className="flex items-center justify-center transition-all active:scale-95 group"
+                className="flex items-center justify-center transition-all active:scale-95 shrink-0 group"
             >
                 {isLoggedIn ? (
-                    <div className={`w-9 h-9 md:w-10 md:h-10 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-md border-2 border-white transition-all group-hover:shadow-lg ${getAvatarColor(username)}`}>
-                        {initial}
-                    </div>
+                    user?.profilePic ? (
+                        <img 
+                            src={getOptimizedImage(user.profilePic, 80)} 
+                            alt={username} 
+                            className="w-9 h-9 md:w-10 md:h-10 rounded-full object-cover shadow-md border-2 border-white transition-all group-hover:shadow-lg shrink-0"
+                        />
+                    ) : (
+                        <div className={`w-9 h-9 md:w-10 md:h-10 rounded-full flex shrink-0 items-center justify-center text-white font-bold text-sm shadow-md border-2 border-white transition-all group-hover:shadow-lg ${getAvatarColor(username)}`}>
+                            {initial}
+                        </div>
+                    )
                 ) : (
                     <div className="p-2 text-gray-700 hover:text-black hover:bg-gray-100 rounded-full transition-all">
                         <User size={24} strokeWidth={1.5} />
@@ -299,10 +325,18 @@ const ProfileMenu = () => {
                         >
                             {isLoggedIn ? (
                                 <>
-                                    <div className="px-5 py-4 border-b border-gray-50 flex items-center gap-3 bg-gray-50/30">
-                                        <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-xs shadow-sm ${getAvatarColor(username)}`}>
-                                            {initial}
-                                        </div>
+                                    <div className="px-5 py-4 border-b shrink-0 border-gray-50 flex items-center gap-3 bg-gray-50/30">
+                                        {user?.profilePic ? (
+                                            <img 
+                                                src={getOptimizedImage(user.profilePic, 80)} 
+                                                alt={username} 
+                                                className="w-10 shrink-0 h-10 rounded-full object-cover shadow-sm border border-gray-100"
+                                            />
+                                        ) : (
+                                            <div className={`w-10 shrink-0 h-10 rounded-full flex items-center justify-center text-white font-bold text-xs shadow-sm ${getAvatarColor(username)}`}>
+                                                {initial}
+                                            </div>
+                                        )}
                                         <div className="flex flex-col overflow-hidden">
                                             <span className="text-[10px] text-gray-400 font-black tracking-widest uppercase">Account</span>
                                             <span className="text-sm font-bold text-black truncate uppercase tracking-tighter">{username}</span>

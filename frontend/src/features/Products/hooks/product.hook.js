@@ -1,6 +1,6 @@
 import { createProduct,getProductById,getMaleProducts,getFemaleProducts,getSneakers,addVariation, getSellerAllProducts, getSellerProductDetail, deleteProduct, DeleteVariation, UpdateVariation, UpdateProduct } from "../services/product.api";
 import{useDispatch} from 'react-redux'
-import {setLoading,setError,setProducts,setCurrentProduct,setDeletedVariation} from '../state/product.slice'
+import { setLoading, setError, setProducts, appendProducts, setPagination, setCurrentProduct, setDeletedVariation } from '../state/product.slice'
 
 const useProduct=()=>{
     const dispatch = useDispatch()
@@ -22,48 +22,60 @@ const handleCreateProduct=async(formData)=>{
     }
 } 
 
-const handleGetMaleProducts=async()=>{
+const handleGetMaleProducts = async (page = 1, isAppend = false) => {
     dispatch(setLoading(true))
     try {
-        const response=await getMaleProducts()
-        dispatch(setProducts(response.products))
-        
+        const response = await getMaleProducts(page)
+        if (isAppend) {
+            dispatch(appendProducts(response.products))
+        } else {
+            dispatch(setProducts(response.products))
+        }
+        dispatch(setPagination(response.pagination))
     }
-    catch(error){
-        dispatch(setError(error.response?.data?.message|| error.message))
+    catch (error) {
+        dispatch(setError(error.response?.data?.message || error.message))
     }
-    finally{
+    finally {
         dispatch(setLoading(false))
     }
-} 
-const handleGetFemaleProducts=async()=>{
+}
+const handleGetFemaleProducts = async (page = 1, isAppend = false) => {
     dispatch(setLoading(true))
     try {
-        const response=await getFemaleProducts()
-        dispatch(setProducts(response.products))
-        
+        const response = await getFemaleProducts(page)
+        if (isAppend) {
+            dispatch(appendProducts(response.products))
+        } else {
+            dispatch(setProducts(response.products))
+        }
+        dispatch(setPagination(response.pagination))
     }
-    catch(error){
-        dispatch(setError(error.response?.data?.message|| error.message))
+    catch (error) {
+        dispatch(setError(error.response?.data?.message || error.message))
     }
-    finally{
+    finally {
         dispatch(setLoading(false))
     }
-} 
-const handleGetSneakers=async()=>{
+}
+const handleGetSneakers = async (page = 1, isAppend = false) => {
     dispatch(setLoading(true))
     try {
-        const response=await getSneakers()
-        dispatch(setProducts(response.products))
-        
+        const response = await getSneakers(page)
+        if (isAppend) {
+            dispatch(appendProducts(response.products))
+        } else {
+            dispatch(setProducts(response.products))
+        }
+        dispatch(setPagination(response.pagination))
     }
-    catch(error){
-        dispatch(setError(error.response?.data?.message|| error.message))
+    catch (error) {
+        dispatch(setError(error.response?.data?.message || error.message))
     }
-    finally{
+    finally {
         dispatch(setLoading(false))
     }
-} 
+}
 
 const handleGetProductById=async(id)=>{
     dispatch(setLoading(true))
@@ -97,20 +109,24 @@ const handleAddVariation=async(id,formData)=>{
 } 
 
 
-const handleGetSellerAllProducts=async()=>{
+const handleGetSellerAllProducts = async (page = 1, isAppend = false) => {
     dispatch(setLoading(true))
     try {
-        const response=await getSellerAllProducts()
-        dispatch(setProducts(response.products))
-        
+        const response = await getSellerAllProducts(page)
+        if (isAppend) {
+            dispatch(appendProducts(response.products))
+        } else {
+            dispatch(setProducts(response.products))
+        }
+        dispatch(setPagination(response.pagination))
     }
-    catch(error){
-        dispatch(setError(error.response?.data?.message|| error.message))
+    catch (error) {
+        dispatch(setError(error.response?.data?.message || error.message))
     }
-    finally{
+    finally {
         dispatch(setLoading(false))
     }
-} 
+}
 const handleGetSellerProductDetail=async(id)=>{
     dispatch(setLoading(true))
     try {
